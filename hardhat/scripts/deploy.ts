@@ -22,10 +22,10 @@ async function main() {
     
     // Get the deployed Tipflow contract address from events
     const event = receipt.logs.find(
-      (log: any) => log.fragment?.name === "ContractDeployed"
+      (log) => log.fragment?.name === "ContractDeployed"
     );
     
-    if (event) {
+    if (event && 'args' in event) {
       const [creatorAddress, contractAddress] = event.args;
       console.log("Creator Address:", creatorAddress);
       console.log("Tipflow Contract Address:", contractAddress);
