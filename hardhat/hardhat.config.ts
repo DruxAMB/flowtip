@@ -15,6 +15,11 @@ const config: HardhatUserConfig = {
       accounts: [PRIVATE_KEY],
       chainId: 84531
     },
+    baseSepolia: {
+      url: "https://sepolia.base.org",
+      accounts: [PRIVATE_KEY],
+      chainId: 84532
+    },
     liskSepolia: {
       url: "https://rpc.sepolia-api.lisk.com",
       accounts: [PRIVATE_KEY],
@@ -23,7 +28,8 @@ const config: HardhatUserConfig = {
   },
   etherscan: {
     apiKey: {
-      baseGoerli: process.env.BASESCAN_API_KEY as string
+      baseGoerli: process.env.BASESCAN_API_KEY as string,
+      baseSepolia: process.env.BASESCAN_API_KEY as string
     },
     customChains: [
       {
@@ -32,6 +38,14 @@ const config: HardhatUserConfig = {
         urls: {
           apiURL: "https://api-goerli.basescan.org/api",
           browserURL: "https://goerli.basescan.org"
+        }
+      },
+      {
+        network: "baseSepolia",
+        chainId: 84532,
+        urls: {
+          apiURL: "https://api-sepolia.basescan.org/api",
+          browserURL: "https://sepolia.basescan.org"
         }
       },
       {
