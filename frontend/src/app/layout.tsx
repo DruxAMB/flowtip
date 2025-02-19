@@ -11,7 +11,7 @@ import { Toaster } from "react-hot-toast";
 const inter = Inter({ subsets: ["latin"] });
 
 export const metadata: Metadata = {
-  title: "CryptoStreamr",
+  title: "tipflow",
   description:
     "Empower your live streams with real-time crypto tipping & Web3 monetization",
 };

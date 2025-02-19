@@ -20,7 +20,7 @@ export default function Page() {
             control of your content monetization.
           </p>
           <div className="flex gap-4 justify-center">
-            <Link href="https://cryptostreamr.xyz/dashboard">
+            <Link href="/dashboard">
               <Button className="bg-blue-600 hover:bg-blue-700 text-white shadow-lg shadow-blue-500/20 text-lg px-8 py-6">
                 Launch App
               </Button>
@@ -33,7 +33,7 @@ export default function Page() {
       <section className="py-20 px-4 bg-white">
         <div className="container mx-auto">
           <h2 className="text-4xl font-bold text-center mb-16 bg-gradient-to-r from-blue-600 to-indigo-600 text-transparent bg-clip-text">
-            Why Choose CryptoStreamr?
+            Why Choose tipflow?
           </h2>
           <div className="grid md:grid-cols-3 gap-8">
             {[
