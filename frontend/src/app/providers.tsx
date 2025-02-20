@@ -3,9 +3,9 @@
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { type ReactNode, useState } from "react";
 import { type State, WagmiProvider } from "wagmi";
-import { wagmiAdapter, projectId, metadata } from "@/wagmi";
-import { mantaSepoliaTestnet } from "@reown/appkit/networks";
+import { wagmiAdapter, projectId, metadata, networks, baseGoerli } from "@/wagmi";
 import { createAppKit } from "@reown/appkit/react";
+import {baseSepolia} from "@reown/appkit/networks"
 
 import { config as wagmiConfig } from "@/wagmi";
 
@@ -16,8 +16,8 @@ ModuleRegistry.registerModules([InfiniteRowModelModule, PaginationModule]);
 createAppKit({
   adapters: [wagmiAdapter],
   projectId,
-  networks: [mantaSepoliaTestnet],
-  defaultNetwork: mantaSepoliaTestnet,
+  networks: [baseSepolia],
+  defaultNetwork: baseSepolia,
   metadata: metadata,
   features: {
     analytics: true, // Optional - defaults to your Cloud configuration
