@@ -1,4 +1,4 @@
-import { cookieStorage, createStorage, type Config, webSocket } from "wagmi";
+import { cookieStorage, createStorage, type Config, http, fallback } from "wagmi";
 import { WagmiAdapter } from "@reown/appkit-adapter-wagmi";
 import { Chain } from "wagmi/chains";
 
@@ -32,8 +32,18 @@ export const baseGoerli = {
     symbol: "ETH",
   },
   rpcUrls: {
-    public: { http: ["https://sepolia.base.org"] },
-    default: { http: ["https://sepolia.base.org"] },
+    public: { 
+      http: [
+        "https://sepolia.base.org",
+        "https://base-sepolia.g.alchemy.com/v2/demo"
+      ]
+    },
+    default: { 
+      http: [
+        "https://sepolia.base.org",
+        "https://base-sepolia.g.alchemy.com/v2/demo"
+      ]
+    },
   },
   blockExplorers: {
     etherscan: { name: "BaseScan", url: "https://sepolia.basescan.org" },
@@ -59,8 +69,11 @@ export const wagmiAdapter = new WagmiAdapter({
   projectId,
   networks,
   transports: {
-    [baseGoerli.id]: webSocket("wss://sepolia.base.org/ws"),
-    [liskSepolia.id]: webSocket("wss://rpc.sepolia-api.lisk.com/ws"),
+    [baseGoerli.id]: fallback([
+      http(baseGoerli.rpcUrls.public.http[0]),
+      http(baseGoerli.rpcUrls.public.http[1])
+    ]),
+    [liskSepolia.id]: http(),
   },
 });
 
