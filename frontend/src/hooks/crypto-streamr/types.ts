@@ -68,7 +68,6 @@ interface UseGetStatsSuccessReturnType {
   status: "success";
   totalTipsReceived: bigint;
   totalTippers: bigint;
-  bio: string;
 }
 
 interface UseGetStatsErrorReturnType extends BaseErrorReturnType {}

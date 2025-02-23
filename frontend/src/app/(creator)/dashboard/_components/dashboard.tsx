@@ -24,11 +24,12 @@ import {
 } from "@/hooks/crypto-streamr";
 import { formatEther } from "viem";
 import { Button } from "@/components/ui/button";
-import { CryptoStreamrAbi } from "@/abi/CryptoStreamr";
+import { TipflowAbi } from "@/abi/Tipflow";
 import toast from "react-hot-toast";
 import { useEffect, useState } from "react";
 import { ArrowUpFromLine, Loader2 } from "lucide-react";
 import { useRouter } from "next/navigation";
+import { TipflowFactoryAddress } from "@/constants";
 
 export default function Dashboard({ baseUrl }: { baseUrl: string }) {
   const accountResult = useAccount();
@@ -52,11 +53,8 @@ export default function Dashboard({ baseUrl }: { baseUrl: string }) {
   const router = useRouter();
 
   useWatchContractEvent({
-    abi: CryptoStreamrAbi,
-    address:
-      creatorInfoResult.status === "success"
-        ? creatorInfoResult.contractAddress
-        : "0x0",
+    abi: TipflowAbi,
+    address: creatorInfoResult.status === "success" ? creatorInfoResult.contractAddress : undefined,
     eventName: "Withdraw",
     onLogs: () => {
       setIsLoading(false);
@@ -101,9 +99,14 @@ export default function Dashboard({ baseUrl }: { baseUrl: string }) {
   const fullUrl = username ? `${baseUrl}/tip/${username}` : "";
 
   const handleWithdraw = () => {
+    if (creatorInfoResult.status !== "success") {
+      toast.error("Creator info not available");
+      return;
+    }
+    
     writeContract(
       {
-        abi: CryptoStreamrAbi,
+        abi: TipflowAbi,
         address: creatorInfoResult.contractAddress,
         functionName: "withdraw",
       },

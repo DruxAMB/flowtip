@@ -1,7 +1,7 @@
-import { CryptoStreamrAbi } from "@/abi/CryptoStreamr";
+import { TipflowAbi } from "@/abi/Tipflow";
 import { useReadContract, useReadContracts } from "wagmi";
-import { CryptoStreamrFactoryAbi } from "@/abi/CryptoStreamrFactory";
-import { CryptoStreamrFactoryAddress } from "@/constants";
+import { TipflowFactoryAbi } from "@/abi/TipflowFactory";
+import { TipflowFactoryAddress } from "@/constants";
 import {
   UseGetAllTipsReturnType,
   UseGetCreatorInfoReturnType,
@@ -14,7 +14,7 @@ export const useGetAllTips = (
   contractAddress: `0x${string}`
 ): UseGetAllTipsReturnType => {
   const result = useReadContract({
-    abi: CryptoStreamrAbi,
+    abi: TipflowAbi,
     address: contractAddress,
     functionName: "getAllTips",
   });
@@ -48,45 +48,36 @@ export const useGetTipHistory = ({
   page: number;
   pageSize: number;
 }): UseGetTipHistoryReturnType => {
-  const tipHistory = useReadContract({
-    abi: CryptoStreamrAbi,
+  const result = useReadContract({
+    abi: TipflowAbi,
     address: contractAddress,
-    functionName: "getTipHistory",
-    args: [BigInt(page), BigInt(pageSize)],
+    functionName: "getAllTips",
   });
 
-  const tipLength = useReadContract({
-    abi: CryptoStreamrAbi,
-    address: contractAddress,
-    functionName: "getTotalTips",
-  });
-
-  if (tipHistory.status === "error") {
+  if (result.status === "error") {
     return {
       status: "error",
-      errorMessage: tipHistory.error.message,
+      errorMessage: result.error.message,
     };
   }
 
-  if (tipLength.status === "error") {
-    return {
-      status: "error",
-      errorMessage: tipLength.error.message,
-    };
-  }
-
-  if (tipHistory.status === "pending" || tipLength.status === "pending") {
+  if (result.status === "pending") {
     return {
       status: "success",
       paginatedTips: [],
-      tipLength: BigInt(0),
+      tipLength: 0n,
     };
   }
 
+  const tips = result.data || [];
+  const startIndex = page * pageSize;
+  const endIndex = startIndex + pageSize;
+  const paginatedTips = tips.slice(startIndex, endIndex);
+
   return {
     status: "success",
-    paginatedTips: tipHistory.data,
-    tipLength: tipLength.data,
+    paginatedTips,
+    tipLength: BigInt(tips.length),
   };
 };
 
@@ -99,32 +90,34 @@ export const useGetTipHistory2 = ({
   startRow: number;
   endRow: number;
 }): UseGetTipHistory2ReturnType => {
-  const tipHistory = useReadContract({
-    abi: CryptoStreamrAbi,
+  const result = useReadContract({
+    abi: TipflowAbi,
     address: contractAddress,
-    functionName: "getTipHistory2",
-    args: [BigInt(startRow), BigInt(endRow)],
+    functionName: "getAllTips",
   });
 
-  if (tipHistory.status === "error") {
+  if (result.status === "error") {
     return {
       status: "error",
-      errorMessage: tipHistory.error.message,
+      errorMessage: result.error.message,
     };
   }
 
-  if (tipHistory.status === "pending") {
+  if (result.status === "pending") {
     return {
       status: "success",
       paginatedTips: [],
-      tipLength: BigInt(0),
+      tipLength: 0n,
     };
   }
 
+  const tips = result.data || [];
+  const paginatedTips = tips.slice(startRow, endRow);
+
   return {
     status: "success",
-    paginatedTips: tipHistory.data[0],
-    tipLength: tipHistory.data[1],
+    paginatedTips,
+    tipLength: BigInt(tips.length),
   };
 };
 
@@ -132,13 +125,23 @@ export const useGetCreatorInfoByAddress = (
   address: `0x${string}`
 ): UseGetCreatorInfoReturnType => {
   const result = useReadContract({
-    abi: CryptoStreamrFactoryAbi,
-    address: CryptoStreamrFactoryAddress,
+    abi: TipflowFactoryAbi,
+    address: TipflowFactoryAddress,
     functionName: "creatorInfoByAddress",
     args: [address],
     query: {
-      enabled: !!address
+      enabled: !!address,
+      retry: 2,
+      retryDelay: 1000
     }
+  });
+
+  console.log('Creator Info Hook:', {
+    address,
+    factoryAddress: TipflowFactoryAddress,
+    status: result.status,
+    data: result.data,
+    error: result.error?.message
   });
 
   if (!address) {
@@ -148,6 +151,13 @@ export const useGetCreatorInfoByAddress = (
   }
 
   if (result.status === "error") {
+    // Check if we need to register
+    if (result.error?.message?.includes("returned no data")) {
+      return {
+        status: "error",
+        errorMessage: "Creator not found"
+      };
+    }
     return {
       status: "error",
       errorMessage: result.error?.message || "Failed to fetch creator info"
@@ -180,8 +190,8 @@ export const useGetCreatorInfoByUsername = (
   username: string
 ): UseGetCreatorInfoReturnType => {
   const result = useReadContract({
-    abi: CryptoStreamrFactoryAbi,
-    address: CryptoStreamrFactoryAddress,
+    abi: TipflowFactoryAbi,
+    address: TipflowFactoryAddress,
     functionName: "creatorInfoByUsername",
     args: [username],
   });
@@ -220,20 +230,10 @@ export const useGetCreatorStats = (
   const result = useReadContracts({
     contracts: [
       {
-        abi: CryptoStreamrAbi,
+        abi: TipflowAbi,
         address: contractAddress,
-        functionName: "getTotalTips",
-      },
-      {
-        abi: CryptoStreamrAbi,
-        address: contractAddress,
-        functionName: "totalTipsReceived",
-      },
-      {
-        abi: CryptoStreamrAbi,
-        address: contractAddress,
-        functionName: "bio",
-      },
+        functionName: "getAllTips",
+      }
     ],
     query: {
       enabled: !!contractAddress,
@@ -253,12 +253,11 @@ export const useGetCreatorStats = (
     };
   }
 
+  const tips = result.data[0].status === "success" ? result.data[0].result : [];
+  
   return {
     status: "success",
-    totalTippers:
-      result.data[0].status === "success" ? result.data[0].result : BigInt(0),
-    totalTipsReceived:
-      result.data[1].status === "success" ? result.data[1].result : BigInt(0),
-    bio: result.data[2].status === "success" ? result.data[2].result : "",
+    totalTippers: BigInt(new Set(tips.map(tip => tip.senderAddress)).size),
+    totalTipsReceived: BigInt(tips.length),
   };
 };

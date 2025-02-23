@@ -1,4 +1,4 @@
-export const CryptoStreamrFactoryAbi = [
+export const TipflowFactoryAbi = [
   {
     inputs: [],
     stateMutability: "nonpayable",
