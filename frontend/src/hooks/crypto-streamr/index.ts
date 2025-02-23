@@ -136,25 +136,35 @@ export const useGetCreatorInfoByAddress = (
     address: CryptoStreamrFactoryAddress,
     functionName: "creatorInfoByAddress",
     args: [address],
+    query: {
+      enabled: !!address
+    }
   });
+
+  if (!address) {
+    return {
+      status: "pending"
+    };
+  }
 
   if (result.status === "error") {
     return {
       status: "error",
-      errorMessage: result.error?.message,
+      errorMessage: result.error?.message || "Failed to fetch creator info"
     };
   }
 
   if (result.status === "pending") {
     return {
-      status: "pending",
+      status: "pending"
     };
   }
 
-  if (result.data[0] === "") {
+  // Check if creator exists
+  if (!result.data || result.data[0] === "") {
     return {
       status: "error",
-      errorMessage: "Creator not found",
+      errorMessage: "Creator not found"
     };
   }
 
@@ -162,7 +172,7 @@ export const useGetCreatorInfoByAddress = (
     status: "success",
     username: result.data[0],
     creatorAddress: result.data[1],
-    contractAddress: result.data[2],
+    contractAddress: result.data[2]
   };
 };
 

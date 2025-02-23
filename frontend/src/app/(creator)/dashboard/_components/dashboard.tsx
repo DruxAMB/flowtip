@@ -80,21 +80,25 @@ export default function Dashboard({ baseUrl }: { baseUrl: string }) {
     }
   }, [isConfirmed]);
 
-  if (creatorInfoResult.status === "error") {
+  if (creatorInfoResult.status === "error" && creatorInfoResult.errorMessage === "Creator not found") {
     router.push("/register");
     return null;
   }
 
   if (
     accountResult.status === "reconnecting" ||
+    accountResult.status === "disconnected" ||
     creatorInfoResult.status === "pending"
   ) {
-    return null;
+    return (
+      <div className="flex items-center justify-center h-[50vh]">
+        <Loader2 className="size-6 animate-spin" />
+      </div>
+    );
   }
 
-  const username = creatorInfoResult.username;
-
-  const fullUrl = `${baseUrl}/tip/${username}`;
+  const username = creatorInfoResult.status === "success" ? creatorInfoResult.username : "";
+  const fullUrl = username ? `${baseUrl}/tip/${username}` : "";
 
   const handleWithdraw = () => {
     writeContract(
