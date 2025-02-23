@@ -35,30 +35,52 @@ export default function RegisterForm() {
   }
 
   const handleRegister = async () => {
+    if (!username) {
+      toast.error("Please enter a username");
+      return;
+    }
+
     setIsLoading(true);
 
-    writeContract(
-      {
-        abi: TipflowFactoryAbi,
-        address: TipflowFactoryAddress,
-        functionName: "deployContract",
-        args: [username],
-      },
-      {
-        onSuccess: async (data) => {
-          await waitForTransactionReceipt(config, { hash: data });
-
-          setIsLoading(false);
-
-          toast.success("Registration successful!");
-          router.push("/dashboard");
+    try {
+      // Deploy contract
+      writeContract(
+        {
+          abi: TipflowFactoryAbi,
+          address: TipflowFactoryAddress,
+          functionName: "deployContract",
+          args: [username],
         },
-        onError: (error) => {
-          toast.error(error.message);
-          setIsLoading(false);
-        },
-      }
-    );
+        {
+          onSuccess: async (data) => {
+            try {
+              await waitForTransactionReceipt(config, { hash: data });
+              toast.success("Registration successful!");
+              router.push("/dashboard");
+            } catch (error) {
+              console.error("Transaction failed:", error);
+              toast.error("Registration failed. Please try again.");
+            }
+            setIsLoading(false);
+          },
+          onError: (error) => {
+            console.error("Contract error:", error);
+            if (error.message?.includes("Contract already deployed")) {
+              toast.error("You already have a creator profile");
+            } else if (error.message?.includes("Username already registered")) {
+              toast.error("Username already taken");
+            } else {
+              toast.error("Registration failed. Please try again.");
+            }
+            setIsLoading(false);
+          },
+        }
+      );
+    } catch (error) {
+      console.error("Registration error:", error);
+      toast.error("Registration failed. Please try again.");
+      setIsLoading(false);
+    }
   };
 
   return (
