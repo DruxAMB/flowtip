@@ -3,15 +3,15 @@
 import Image from "next/image";
 import SideNavItems from "./side-nav-items";
 import { useAccount, useReadContract } from "wagmi";
-import { CryptoStreamrFactoryAbi } from "@/abi/CryptoStreamrFactory";
-import { CryptoStreamrFactoryAddress } from "@/constants";
+import { TipflowFactoryAbi } from "@/abi/TipflowFactory";
+import { TipflowFactoryAddress } from "@/constants";
 
 export default function SideNav() {
   const { isConnected, address } = useAccount();
 
   const result = useReadContract({
-    abi: CryptoStreamrFactoryAbi,
-    address: CryptoStreamrFactoryAddress,
+    abi: TipflowFactoryAbi,
+    address: TipflowFactoryAddress,
     functionName: "creatorInfoByAddress",
     args: [address ?? "0x0"],
   });

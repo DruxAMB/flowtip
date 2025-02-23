@@ -15,7 +15,7 @@ import {
 } from "ag-grid-community";
 import { formatEther } from "viem";
 import { readContract } from "@wagmi/core";
-import { CryptoStreamrAbi } from "@/abi/CryptoStreamr";
+import { TipflowAbi } from "@/abi/Tipflow";
 import { config } from "@/wagmi";
 
 export default function History({
@@ -24,23 +24,9 @@ export default function History({
   contractAddress: `0x${string}`;
 }) {
   const [colDefs, _] = useState<ColDef[]>([
-    {
-      field: "timestamp",
-      headerName: "Date & Time",
-      valueGetter: (params) => {
-        if (!params.data) return;
-        return new Date(Number(params.data.timestamp) * 1000).toLocaleString();
-      },
-    },
+    { field: "timestamp", headerName: "Date & Time" },
     { field: "senderName", headerName: "Sender" },
-    {
-      field: "amount",
-      headerName: "Amount",
-      valueGetter: (params) => {
-        if (!params.data) return;
-        return formatEther(params.data.amount);
-      },
-    },
+    { field: "amount", headerName: "Amount" },
     { field: "message", headerName: "Message" },
   ]);
 
@@ -50,16 +36,25 @@ export default function History({
         const { startRow, endRow } = params;
 
         try {
-          const [tips, tipsLength] = await readContract(config, {
-            abi: CryptoStreamrAbi,
+          const tips = await readContract(config, {
+            abi: TipflowAbi,
             address: contractAddress,
-            functionName: "getTipHistory2",
-            args: [BigInt(startRow), BigInt(endRow)],
+            functionName: "getAllTips",
           });
 
-          params.successCallback([...tips], Number(tipsLength));
+          // Handle pagination in memory
+          const paginatedTips = tips.slice(startRow, endRow);
+          const rowsThisBlock = paginatedTips.map((tip) => ({
+            senderAddress: tip.senderAddress,
+            senderName: tip.senderName,
+            message: tip.message,
+            amount: formatEther(tip.amount),
+            timestamp: new Date(Number(tip.timestamp) * 1000).toLocaleString(),
+          }));
+
+          params.successCallback(rowsThisBlock, tips.length);
         } catch (error) {
-          console.error("Error fetching data from contract:", error);
+          console.error("Error fetching tips:", error);
           params.failCallback();
         }
       },

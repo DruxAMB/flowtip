@@ -1,9 +1,9 @@
 "use client";
 
-import { CryptoStreamrFactoryAbi } from "@/abi/CryptoStreamrFactory";
+import { TipflowFactoryAbi } from "@/abi/TipflowFactory";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { CryptoStreamrFactoryAddress } from "@/constants";
+import { TipflowFactoryAddress } from "@/constants";
 import { redirect } from "next/navigation";
 import { useState } from "react";
 import { useAccount, useReadContract, useWriteContract } from "wagmi";
@@ -24,8 +24,8 @@ export default function RegisterForm() {
   const router = useRouter();
 
   const result = useReadContract({
-    abi: CryptoStreamrFactoryAbi,
-    address: CryptoStreamrFactoryAddress,
+    abi: TipflowFactoryAbi,
+    address: TipflowFactoryAddress,
     functionName: "creatorInfoByAddress",
     args: [address ?? "0x0"],
   });
@@ -39,8 +39,8 @@ export default function RegisterForm() {
 
     writeContract(
       {
-        abi: CryptoStreamrFactoryAbi,
-        address: CryptoStreamrFactoryAddress,
+        abi: TipflowFactoryAbi,
+        address: TipflowFactoryAddress,
         functionName: "deployContract",
         args: [username],
       },
